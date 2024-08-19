@@ -1,37 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebSocket</title>
-    <link rel="stylesheet" href="index.css">
-</head>
-<body>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
     <h2>WebSocket Test</h2>
-    <input type="text" id="messageInput" placeholder="Enter message">
+    <input type="text" id="messageInput" placeholder="Enter message" />
     <div>
-        <button id="sendButton">Send</button>
+      <button id="sendButton">Send</button>
     </div>
     <div id="output"></div>
 
     <script>
-        const ws = new WebSocket("ws://localhost:8080/ws");
+      const ws = new WebSocket("ws://localhost:8080/ws");
 
-        ws.onopen = () => {
-            console.log("WebSocket connection opened");
+      ws.onopen = () => {
+        console.log("WebSocket connection opened");
+      };
+
+      ws.onmessage = (event) => {
+        const output = document.getElementById("output");
+        const message = document.createElement("p");
+        message.textContent = event.data;
+        output.appendChild(message);
+      };
+
+      document.getElementById("sendButton").onclick = () => {
+        const message = document.getElementById("messageInput").value;
+        ws.send(message);
+      };
+
+      document.getElementById("messageInput").onkeypress = (event) => {
+        if (event.keyCode === 13) {
+          const message = document.getElementById("messageInput").value;
+          ws.send(message);
         }
-
-        ws.onmessage = (event) => {
-            const output = document.getElementById("output");
-            const message = document.createElement("p");
-            message.textContent = event.data;
-            output.appendChild(message);
-        }
-
-        document.getElementById("sendButton").onclick = () => {
-            const message = document.getElementById("messageInput").value;
-            ws.send(message);
-        };
+      };
     </script>
-</body>
+  </body>
 </html>

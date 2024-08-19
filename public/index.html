@@ -12,5 +12,26 @@
     <div>
         <button id="sendButton">Send</button>
     </div>
+    <div id="output"></div>
+
+    <script>
+        const ws = new WebSocket("ws://localhost:8080/ws");
+
+        ws.onopen = () => {
+            console.log("WebSocket connection opened");
+        }
+
+        ws.onmessage = (event) => {
+            const output = document.getElementById("output");
+            const message = document.createElement("p");
+            message.textContent = event.data;
+            output.appendChild(message);
+        }
+
+        document.getElementById("sendButton").onclick = () => {
+            const message = document.getElementById("messageInput").value;
+            ws.send(message);
+        };
+    </script>
 </body>
 </html>

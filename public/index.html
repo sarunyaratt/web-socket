@@ -2,43 +2,83 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebSocket</title>
+    <title>Simple Chat</title>
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <h2>WebSocket Test</h2>
-    <input type="text" id="messageInput" placeholder="Enter message" />
     <div>
-      <button id="sendButton">Send</button>
+      <div class="name">
+        <div id="name"></div>
+        <input id="username" placeholder="Your name" />
+        <button id="change_name">Change</button>
+      </div>
+
+      <div class="message">
+        <input id="message" placeholder="Your message" />
+        <button id="send">Send</button>
+      </div>
     </div>
-    <div id="output"></div>
+
+    <div id="chatbox"></div>
 
     <script>
-      const ws = new WebSocket("ws://localhost:8080/ws");
+      let ws;
+      let name = "";
 
-      ws.onopen = () => {
-        console.log("WebSocket connection opened");
-      };
+      function initializeWebSocket() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          return; // WebSocket is already open
+        }
 
-      ws.onmessage = (event) => {
-        const output = document.getElementById("output");
-        const message = document.createElement("p");
-        message.textContent = event.data;
-        output.appendChild(message);
-      };
+        ws = new WebSocket("ws://localhost:3000/ws");
 
-      document.getElementById("sendButton").onclick = () => {
-        const message = document.getElementById("messageInput").value;
-        ws.send(message);
-      };
+        ws.onopen = function () {
+          console.log("WebSocket connection opened");
+        };
 
-      document.getElementById("messageInput").onkeypress = (event) => {
-        if (event.keyCode === 13) {
-          const message = document.getElementById("messageInput").value;
-          ws.send(message);
+        ws.onmessage = function (event) {
+          const data = JSON.parse(event.data);
+          if (data.name) {
+            const namebox = document.getElementById("name");
+            namebox.innerHTML = `<p><strong>Name:${name}</strong></p>`;
+          }
+
+          if (data.name && data.message) {
+            const chatbox = document.getElementById("chatbox");
+            chatbox.innerHTML += `<p><strong>${data.name}:</strong> ${data.message}</p>`;
+          }
+        };
+
+        ws.onclose = function () {
+          console.log("WebSocket connection closed");
+          // Optionally, attempt to reconnect after a delay
+          setTimeout(initializeWebSocket, 5000);
+        };
+
+        ws.onerror = function (error) {
+          console.log("WebSocket error:", error);
+        };
+      }
+
+      document.getElementById("send").onclick = function () {
+        const message = document.getElementById("message").value;
+        if (message && name) {
+          ws.send(JSON.stringify({ message, name }));
+          document.getElementById("message").value = ""; // Clear message input
         }
       };
+
+      document.getElementById("change_name").onclick = function () {
+        const newUsername = document.getElementById("username").value;
+        if (newUsername) {
+          name = newUsername;
+          // Broadcast name change
+          ws.send(JSON.stringify({ name }));
+        }
+      };
+
+      // Initialize WebSocket connection
+      initializeWebSocket();
     </script>
   </body>
 </html>

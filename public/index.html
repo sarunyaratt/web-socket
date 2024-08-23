@@ -51,7 +51,6 @@
 
         ws.onclose = function () {
           console.log("WebSocket connection closed");
-          // Optionally, attempt to reconnect after a delay
           setTimeout(initializeWebSocket, 5000);
         };
 
@@ -72,12 +71,10 @@
         const newUsername = document.getElementById("username").value;
         if (newUsername) {
           name = newUsername;
-          // Broadcast name change
           ws.send(JSON.stringify({ name }));
         }
       };
 
-      // Initialize WebSocket connection
       initializeWebSocket();
     </script>
   </body>
